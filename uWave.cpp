@@ -52,81 +52,119 @@ void beginGesture() {
 
 }
 
+int **allocateQuantizeBuffers(int totalAccelerationDataPoints) {
+  int i;
+
+	int **quantizeBuffers = (int**)malloc(sizeof(int*)*(totalAccelerationDataPoints / QUAN_MOV_STEP + 1));
+	for(i = 0; i < totalAccelerationDataPoints/QUAN_MOV_STEP + 1; i++)
+	  quantizeBuffers[i] = (int*)malloc(sizeof(int)*DIMENSION);
+
+	return quantizeBuffers;
+}
+
+int takeMovingWindowAverage(int** accelerationData, int totalAccelerationDataPoints, int **quantizeBuffers) {
+	int accelerationDataIndex = 0;
+	int quantizeDataIndex;
+	int axis;
+	int totalDataPoints = 0;
+
+	int sum;
+	int window = QUAN_WIN_SIZE;
+	while (accelerationDataIndex < totalAccelerationDataPoints) {
+		if (accelerationDataIndex + window > totalAccelerationDataPoints) {
+			window = totalAccelerationDataPoints - accelerationDataIndex;
+		}
+
+		for( axis = 0; axis < DIMENSION; axis++) {
+			sum = 0;
+
+			for( quantizeDataIndex = accelerationDataIndex; quantizeDataIndex < window + accelerationDataIndex; quantizeDataIndex++) {
+				sum += accelerationData[quantizeDataIndex][axis];
+			}
+			quantizeBuffers[totalDataPoints][axis] = sum * 1.0 / window;
+		}
+
+		totalDataPoints++;
+		accelerationDataIndex += QUAN_MOV_STEP;
+	}
+	return totalDataPoints;
+}
+
+void quantizeAndStore(int** accelerationData, int **quantizeBuffers, int totalQuantizedDataPoints) {
+
+	for(int i = 0; i < totalQuantizedDataPoints; i++) {
+		for( int axis = 0; axis < DIMENSION; axis++) {
+
+		  int value = quantizeBuffers[i][axis];
+
+			if( value > 10 ) {
+				if( value > 20) {
+				  value = 16;
+				} else {
+				  value = 10 + (value - 10) / 10 * 5;
+				}
+
+			} else if (value < -10) {
+				if( value < -20) {
+				  value = -16;
+				} else {
+				  value = -10 + (value + 10) / 10 * 5;
+				}
+			}
+
+			//quantizeBuffers[i][axis] = value; // XXX unused?
+			accelerationData[i][axis] = value;
+		}
+	}
+}
+
+int quantizeAcc(int** accelerationData, int totalAccelerationDataPoints) {
+
+  int **quantizeBuffers;
+  int totalQuantizedDataPoints;
+  quantizeBuffers = allocateQuantizeBuffers(totalAccelerationDataPoints);
+  totalQuantizedDataPoints = takeMovingWindowAverage(accelerationData, totalAccelerationDataPoints, quantizeBuffers);
+  quantizeAndStore(accelerationData, quantizeBuffers, totalQuantizedDataPoints);
+  return totalQuantizedDataPoints;
+}
+
 //routine at end: record gesture or detect gesture
 int endGesture() {
-	int ret = -1, i;
-	if( recordFlag == 1) {
-	//write to file
-		writeFile(accBuffer, accIndex,tempIndex);
-		tempIndex++;
-	} else {
-		if( flog != NULL)
-			fscanf(flog, "reach end of Gesture\n");
-	//recognize gesture
-		// 1) quantize acc
-		accIndex = quantizeAcc(accBuffer, accIndex);
-		if( flog != NULL)
-			fprintf(flog, "finish quantizing AccBuffer\n");
+  int ret = -1, i;
+  if( recordFlag == 1) {
+  //write to file
+    writeFile(accBuffer, accIndex,tempIndex);
+    tempIndex++;
+  } else {
+    if( flog != NULL)
+      fscanf(flog, "reach end of Gesture\n");
+  //recognize gesture
+    // 1) quantize acc
+    accIndex = quantizeAcc(accBuffer, accIndex);
+    if( flog != NULL)
+      fprintf(flog, "finish quantizing AccBuffer\n");
 
-		// 2) reads in templates, assume fixed number of templates now
-		Gesture templates[NUM_TEMPLATES];
-		for( i = 0; i < NUM_TEMPLATES; i++) {
-			templates[i] = readFile(i);
-			if( flog != NULL)
-				fprintf(flog, "finish reading template %d\n", i);
-			templates[i].length = quantizeAcc(templates[i].data, templates[i].length);
-		}
-		ret = DetectGesture(accBuffer, accIndex, templates, NUM_TEMPLATES);
-		if( flog != NULL)
-			fprintf(flog, "gesture is # %d\n", ret);
-		for(i = 0; i < NUM_TEMPLATES; i++)
-			releaseAccBuf(templates[i].data, templates[i].length);
-	}
+    // 2) reads in templates, assume fixed number of templates now
+    Gesture templates[NUM_TEMPLATES];
+    for( i = 0; i < NUM_TEMPLATES; i++) {
+      templates[i] = readFile(i);
+      if( flog != NULL)
+        fprintf(flog, "finish reading template %d\n", i);
 
-	if( flog != NULL)
-		fclose(flog);
-	releaseAccBuf(accBuffer, MAX_ACC_LEN);
-	return ret;
+      templates[i].length = quantizeAcc(templates[i].data, templates[i].length);
+    }
+    ret = DetectGesture(accBuffer, accIndex, templates, NUM_TEMPLATES);
+    if( flog != NULL)
+      fprintf(flog, "gesture is # %d\n", ret);
+    for(i = 0; i < NUM_TEMPLATES; i++)
+      releaseAccBuf(templates[i].data, templates[i].length);
+  }
+
+  if( flog != NULL)
+    fclose(flog);
+  releaseAccBuf(accBuffer, MAX_ACC_LEN);
+  return ret;
 }
-//quantize
-
-int quantizeAcc(int** acc_data, int length) {
-	int i=0, j, k = 0, l, window = QUAN_WIN_SIZE, sum;
-	int **temp = (int**)malloc(sizeof(int*)*(length/QUAN_MOV_STEP + 1));
-	for(i = 0; i < length/QUAN_MOV_STEP + 1; i++)
-		temp[i] = (int*)malloc(sizeof(int)*DIMENSION);
-	//take moving window average
-	i = 0;
-	while(i < length) {
-		if( i + window > length)
-			window = length - i;
-		for( l = 0; l < DIMENSION; l++) {
-			sum = 0;
-			for( j = i; j < window+i; j++)
-				sum += acc_data[j][l];
-			temp[k][l] = sum*1.0/window;
-		}
-		k++;
-		i += QUAN_MOV_STEP;
-	}//while
-	//nonlinear quantization and copy quantized value to original buffer
-	for( i = 0; i < k; i++)
-		for( l = 0; l < DIMENSION; l++) {
-			if( temp[i][l] > 10 ) {
-				if( temp[i][l] > 20)
-					temp[i][l] = 16;
-				else
-					temp[i][l] = 10 + (temp[i][l]-10)/10*5;
-			} else if( temp[i][l] < -10) {
-				if( temp[i][l] < -20)
-					temp[i][l] = -16;
-				else
-					temp[i][l] = -10 + (temp[i][l] + 10)/10*5;
-			}
-			acc_data[i][l] = temp[i][l];
-		}
-	return k;
-}//quantize
 
 //DTW algorithm, return distance
 int DTWdistance(int** sample1, int length1, int** sample2, int length2, int i, int j, int* table) {

@@ -62,7 +62,6 @@ void beginGesture();
 
 int endGesture(); //return the gesture index if in recognizing mode (recordFlag = 0)
 
-int quantizeAcc(int** acc_data, int length);
 int DTWdistance(int** sample1, int length1, int** sample2, int length2, int i, int j, int* table);
 int DetectGesture(int** input, int length, Gesture* templates, int templateNum);
 Gesture readFile(int index);
