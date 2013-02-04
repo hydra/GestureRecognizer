@@ -1,14 +1,21 @@
 
 #include <stdio.h>
+
+#include "Config.h"
 #include "GestureRecognizer.h"
 
-GestureRecognizer::GestureRecognizer() : readyToRecognize(false) {
+GestureRecognizer::GestureRecognizer() : readyToRecognize(false), sampleFrequency(SAMPLE_FREQUENCY_HZ), addMotionDataCounter(0) {
+  motionDataStep = sampleFrequency / 25;
 }
 
 void GestureRecognizer::addMotionData(AccelerationData& accelerationData) {
 
-  printf("a/g: %6hd %6hd %6hd\n", accelerationData.x, accelerationData.y, accelerationData.z);
+  addMotionDataCounter++;
+  if (!shouldAddMotionData()) {
+    return;
+  }
 
+  printf("a/g: %6hd %6hd %6hd\n", accelerationData.x, accelerationData.y, accelerationData.z);
   averager.addMotionData(accelerationData);
   if (!averager.isFull()) {
     return;
@@ -22,6 +29,10 @@ void GestureRecognizer::addMotionData(AccelerationData& accelerationData) {
   averager.reset();
 
   readyToRecognize = true;
+}
+
+bool GestureRecognizer::shouldAddMotionData(void) {
+  return (addMotionDataCounter % motionDataStep == 0);
 }
 
 Gesture *GestureRecognizer::recognize(void) {

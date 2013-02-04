@@ -1,9 +1,10 @@
 #ifndef AVERAGER_H
 #define AVERAGER_H
 
+#include "Config.h"
 #include "AccelerationData.h"
 
-#define SAMPLES_TO_AVERAGE 8
+#define SAMPLES_TO_AVERAGE ((SAMPLE_FREQUENCY_HZ / 25) * 2)
 
 class Averager {
 

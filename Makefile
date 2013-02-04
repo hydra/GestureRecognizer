@@ -1,6 +1,6 @@
 all: uWave gestureRecognizer
 
-HDRS = uWave.h I2Cdev.h MPU6050.h GestureRecognizer.h Averager.h AccelerationDataStore.h Gesture.h
+HDRS = uWave.h I2Cdev.h MPU6050.h GestureRecognizer.h Averager.h AccelerationDataStore.h Gesture.h Config.h
 
 COMMON_OBJS = I2Cdev.o MPU6050.o
 GESTURERECOGNIZER_OBJS = GestureRecognizer.o Averager.o AccelerationDataStore.o Gesture.o GestureRecognizerApp.o

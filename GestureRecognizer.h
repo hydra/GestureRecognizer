@@ -19,6 +19,13 @@ private:
   Averager averager;
   AccelerationDataStore accelerationDataStore;
   bool readyToRecognize;
+
+  unsigned int sampleFrequency;
+  unsigned int addMotionDataCounter;
+  unsigned int motionDataStep;
+
+  bool shouldAddMotionData(void);
+
 };
 
 #endif
