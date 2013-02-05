@@ -3,29 +3,20 @@
 #define GESTURERECOGNIZER_H
 
 #include "AccelerationData.h"
-#include "AccelerationDataStore.h"
-#include "Averager.h"
-
 #include "Gesture.h"
 
 class GestureRecognizer {
 
 public:
   GestureRecognizer();
-  void addMotionData(AccelerationData& accelerationData);
+  void loadGestures(void);
+
+  void addAccelerationData(AccelerationData& accelerationData);
   Gesture *recognize(void);
 
 private:
-  Averager averager;
-  AccelerationDataStore accelerationDataStore;
-  bool readyToRecognize;
-
-  unsigned int sampleFrequency;
-  unsigned int addMotionDataCounter;
-  unsigned int motionDataStep;
-
-  bool shouldAddMotionData(void);
-
+  Gesture gestures[MAX_GESTURES];
+  Gesture possibleGesture;
 };
 
 #endif

@@ -1,5 +1,7 @@
 
 #include <stdio.h>
+
+#include "Config.h"
 #include "Averager.h"
 
 Averager::Averager() : totalSamplesInBuffer(0) {
@@ -10,7 +12,7 @@ void Averager::reset(void) {
   totalSamplesInBuffer = 0;
 }
 
-void Averager::addMotionData(AccelerationData& accelerationData) {
+void Averager::addAccelerationData(AccelerationData& accelerationData) {
   if (isFull()) {
     return;
   }
@@ -20,6 +22,10 @@ void Averager::addMotionData(AccelerationData& accelerationData) {
 
 bool Averager::isFull(void) {
   return SAMPLES_TO_AVERAGE == totalSamplesInBuffer;
+}
+
+bool Averager::isEmpty(void) {
+  return totalSamplesInBuffer == 0;
 }
 
 AccelerationData& Averager::getAverages(void) {

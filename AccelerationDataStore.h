@@ -3,8 +3,6 @@
 
 #include "AccelerationData.h"
 
-#define MAX_ACCELERATION_ITEMS 500
-
 class AccelerationDataStore {
 public:
   void add(AccelerationData& accelerationData);

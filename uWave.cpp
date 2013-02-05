@@ -97,6 +97,7 @@ void quantizeAndStore(int** accelerationData, int **quantizeBuffers, int totalQu
 
 		  int value = quantizeBuffers[i][axis];
 
+#ifdef USE_QUANTIZER
 			if( value > 10 ) {
 				if( value > 20) {
 				  value = 16;
@@ -111,7 +112,7 @@ void quantizeAndStore(int** accelerationData, int **quantizeBuffers, int totalQu
 				  value = -10 + (value + 10) / 10 * 5;
 				}
 			}
-
+#endif
 			//quantizeBuffers[i][axis] = value; // XXX unused?
 			accelerationData[i][axis] = value;
 		}
@@ -271,7 +272,7 @@ int DetectGesture(int** input, int length, Gesture* templates, int templateNum)
 {
 	if( length <= 0)
 		return -1;
-	int i, ret = 0,j;
+	int i, ret = -1,j;
 
 	int distances[NUM_TEMPLATES];
 	//int table[MAX_ACC_LEN/QUAN_MOV_STEP*MAX_ACC_LEN/QUAN_MOV_STEP];
@@ -282,7 +283,9 @@ int DetectGesture(int** input, int length, Gesture* templates, int templateNum)
 			table[j] = -1;
 
 		distances[i] = DTWdistance(input, length, templates[i].data, templates[i].length, length-1, templates[i].length-1, table);
+		printf("distance, index: %d, before: %d", i, distances[i]);
 		distances[i] /= (length + templates[i].length);
+		printf(", after: %d\n", distances[i]);
 		free(table);
 	}
 

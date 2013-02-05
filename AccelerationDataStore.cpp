@@ -1,4 +1,5 @@
 
+#include "Config.h"
 #include "AccelerationDataStore.h"
 
 void AccelerationDataStore::add(AccelerationData& accelerationData) {

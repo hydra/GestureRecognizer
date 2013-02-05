@@ -1,10 +1,7 @@
 #ifndef AVERAGER_H
 #define AVERAGER_H
 
-#include "Config.h"
 #include "AccelerationData.h"
-
-#define SAMPLES_TO_AVERAGE ((SAMPLE_FREQUENCY_HZ / 25) * 2)
 
 class Averager {
 
@@ -12,8 +9,9 @@ public:
   Averager();
   void reset(void);
 
-  void addMotionData(AccelerationData& accelerationData);
+  void addAccelerationData(AccelerationData& accelerationData);
   bool isFull(void);
+  bool isEmpty(void);
 
   AccelerationData& getAverages(void);
 
