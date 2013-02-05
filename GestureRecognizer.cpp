@@ -5,12 +5,15 @@
 #include "GestureRecognizer.h"
 
 GestureRecognizer::GestureRecognizer() {
+  for (int index = 0; index < MAX_GESTURES; index++) {
+    Gesture& gesture = gestures[index];
+    gesture.setId(index);
+  }
 }
 
 void GestureRecognizer::loadGestures(void) {
   for (int index = 0; index < MAX_GESTURES; index++) {
     Gesture& gesture = gestures[index];
-    gesture.setId(index);
     gesture.load();
   }
 }
