@@ -90,6 +90,7 @@ int takeMovingWindowAverage(int** accelerationData, int totalAccelerationDataPoi
 	return totalDataPoints;
 }
 
+#define USE_QUANTIZER
 void quantizeAndStore(int** accelerationData, int **quantizeBuffers, int totalQuantizedDataPoints) {
 
 	for(int i = 0; i < totalQuantizedDataPoints; i++) {
@@ -272,7 +273,7 @@ int DetectGesture(int** input, int length, Gesture* templates, int templateNum)
 {
 	if( length <= 0)
 		return -1;
-	int i, ret = -1,j;
+	int i, ret = 0,j;
 
 	int distances[NUM_TEMPLATES];
 	//int table[MAX_ACC_LEN/QUAN_MOV_STEP*MAX_ACC_LEN/QUAN_MOV_STEP];
