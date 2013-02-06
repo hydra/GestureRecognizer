@@ -83,6 +83,7 @@ int takeMovingWindowAverage(int** accelerationData, int totalAccelerationDataPoi
 			}
 			quantizeBuffers[totalDataPoints][axis] = sum * 1.0 / window;
 		}
+		printf("sampled, x:%6hd, y:%6hd, z:%6hd\n", quantizeBuffers[totalDataPoints][0], quantizeBuffers[totalDataPoints][1], quantizeBuffers[totalDataPoints][2]);
 
 		totalDataPoints++;
 		accelerationDataIndex += QUAN_MOV_STEP;
@@ -117,6 +118,7 @@ void quantizeAndStore(int** accelerationData, int **quantizeBuffers, int totalQu
 			//quantizeBuffers[i][axis] = value; // XXX unused?
 			accelerationData[i][axis] = value;
 		}
+		printf("quantized, x:%6hd, y:%6hd, z:%6hd\n", accelerationData[i][0], accelerationData[i][1], accelerationData[i][2]);
 	}
 }
 
@@ -153,7 +155,9 @@ int endGesture() {
       if( flog != NULL)
         fprintf(flog, "finish reading template %d\n", i);
 
+      printf("template length before: %d\n", templates[i].length);
       templates[i].length = quantizeAcc(templates[i].data, templates[i].length);
+      printf("template length after: %d\n", templates[i].length);
     }
     ret = DetectGesture(accBuffer, accIndex, templates, NUM_TEMPLATES);
     if( flog != NULL)
@@ -284,7 +288,7 @@ int DetectGesture(int** input, int length, Gesture* templates, int templateNum)
 			table[j] = -1;
 
 		distances[i] = DTWdistance(input, length, templates[i].data, templates[i].length, length-1, templates[i].length-1, table);
-		printf("distance, index: %d, before: %d", i, distances[i]);
+		printf("distance, index: %d, length: %d, templateLength: %d, before: %d", i, length, templates[i].length, distances[i]);
 		distances[i] /= (length + templates[i].length);
 		printf(", after: %d\n", distances[i]);
 		free(table);

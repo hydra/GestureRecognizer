@@ -6,6 +6,8 @@
 class AccelerationDataStore {
 public:
   void add(AccelerationData& accelerationData);
+  unsigned int getTotalAccelerationDataItems(void);
+  AccelerationData* getAccelerationData(void);
 
 private:
   AccelerationData accelerationData[MAX_ACCELERATION_ITEMS];

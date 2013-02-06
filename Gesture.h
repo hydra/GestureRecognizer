@@ -3,7 +3,7 @@
 
 #include "AccelerationData.h"
 #include "AccelerationDataStore.h"
-#include "Averager.h"
+#include "Sampler.h"
 #include "DataQuantizer.h"
 #include "Gesture.h"
 
@@ -14,23 +14,29 @@ public:
   unsigned int getId(void);
 
   void load(void);
+  void load(const char *filename);
+  void save(void);
+  void import(void);
 
   void addAccelerationData(AccelerationData& accelerationData);
 
+  bool isValid(void);
+  long calculateDistanceBetween(Gesture& gesture);
+
 private:
   unsigned int id;
-  Averager averager;
+  Sampler sampler;
   AccelerationDataStore accelerationDataStore;
 #ifdef USE_DATA_QUANTIZER
   DataQuantizer dataQuantizer;
 #endif
 
-  unsigned int sampleFrequency;
-  unsigned int addAccelerationDataCounter;
-  unsigned int accelerationDataStep;
 
-  bool shouldAddAccelerationData(void);
-  void addAveragedDataToStore(void);
+  void addSampledDataToStore(void);
+  AccelerationDataStore& getAccelerationDataStore(void);
+
+  long *buildTable(unsigned int itemsInOtherGestureToCompare);
+  long calculateDTWDistance(AccelerationData *otherAccelerationData, unsigned int otherTotalAccelerationDataItems, int compareIndex, int otherCompareIndex, long *table);
 
 };
 

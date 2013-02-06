@@ -38,6 +38,11 @@ public:
     return 0;
   }
 
+  void scale(short divider) {
+    x = x / divider;
+    y = y / divider;
+    z = z / divider;
+  }
 };
 
 #endif

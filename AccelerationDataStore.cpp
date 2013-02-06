@@ -19,3 +19,11 @@ void AccelerationDataStore::discardFirstItem(void) {
 
   totalAccelerationDataItems--;
 }
+
+unsigned int AccelerationDataStore::getTotalAccelerationDataItems(void) {
+  return totalAccelerationDataItems;
+}
+
+AccelerationData* AccelerationDataStore::getAccelerationData(void) {
+  return &accelerationData[0];
+}

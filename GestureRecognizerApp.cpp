@@ -14,6 +14,7 @@ MPU6050 accelgyro;
 GestureRecognizer gestureRecognizer;
 
 ScheduledAction sampleAccelerationDataAction;
+ScheduledAction recognizeGestureAction;
 
 void setup() {
 
@@ -30,35 +31,77 @@ void setup() {
 
     sampleAccelerationDataAction.setDelayMicros((1000L * 1000L) / SAMPLE_FREQUENCY_HZ);
     sampleAccelerationDataAction.reset();
-
 }
 
-void recognizeGestures(void) {
+void sampleAccelerationData(void) {
 
   AccelerationData accelerationData;
   accelgyro.getAcceleration(&accelerationData.x, &accelerationData.y, &accelerationData.z);
 
   gestureRecognizer.addAccelerationData(accelerationData);
+}
 
+void recognizeGesture(void) {
   Gesture* recognizedGesture = gestureRecognizer.recognize();
   if (!recognizedGesture) {
     return;
   }
 
-  printf("Recognized gesture: %d\n", recognizedGesture->getId());
+  printf("\nRecognized gesture: %d\n\n", recognizedGesture->getId());
 }
 
-int main (int argc, char *argv[]) {
+
+void replayAndRecognize() {
+
+  gestureRecognizer.load("replay.ges");
+  printf("Recognizing...\n");
+  recognizeGesture();
+}
+
+void recordAndRecognize(bool continuousMode) {
+
+  unsigned long recognizeDelayMicros = (1000L * 1000L) * 0.25;
+
+  if (!continuousMode) {
+    recognizeDelayMicros = (1000L * 1000L) * 1;
+  }
+  recognizeGestureAction.setDelayMicros(recognizeDelayMicros);
+  recognizeGestureAction.reset();
+
+  printf("Recording...\n");
+  while (true) {
+    if (sampleAccelerationDataAction.isActionDue()) {
+      sampleAccelerationData();
+    }
+
+    if (recognizeGestureAction.isActionDue()) {
+      printf("Recognizing...\n");
+      recognizeGesture();
+      if (!continuousMode) {
+        break;
+      }
+    }
+  }
+}
+
+int main(int argc, char *argv[]) {
 
   setup();
 
-  while (true) {
-    if (!sampleAccelerationDataAction.isActionDue()) {
-      continue;
-    }
-
-    recognizeGestures();
+  printf("args: %d\n", argc);
+  for (int index = 0; index < argc; index++) {
+    printf("%s\n", argv[index]);
+  }
+  if (argc == 2 && strcasecmp(argv[1], "REPLAY") == 0) {
+    replayAndRecognize();
+    return 0;
   }
 
-	return 0;
+  bool continuousMode = false;
+  if (argc == 2 && strcasecmp(argv[1], "CONTINUOUS") == 0) {
+    continuousMode = true;
+  }
+
+  recordAndRecognize(continuousMode);
+  return 0;
 }

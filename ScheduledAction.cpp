@@ -3,7 +3,7 @@
 #include "ScheduledAction.h"
 
 void ScheduledAction::reset() {
-  nextActionAt = micros();
+  nextActionAt = micros() + delayMicros;
   missedActions = 0;
 }
 

@@ -1,0 +1,112 @@
+uWave and gestureRecognizer
+
+
+About:
+
+A gesture recognition system that works with accelerometer x/y/z axis data
+based on uWave.
+
+
+History:
+
+I stumbled upon uWave, a gesture recognition system.  While it worked fine it
+was not very efficient and the implementation was lacking and hard to follow.
+
+uWave did not support continuous gesture recognition which I need for a project
+of mine.  The implementation was certainly not suitable for continuous gesture
+recognition due to excessive memory allocation/deallocation, intensive
+recursive calculations and excessive i/o operations.
+
+I thus decided to refactor a bit of uWave in order to understand it before
+re-implementing it in C++.
+
+The use of static filenames and buffers in the code is because the classes will
+be further refactored and re-used on an embedded processor with limited ram and
+no file based i/o.
+
+
+Copyright:
+
+The original uWave code (uWave.h and uWave.c) is copyright of the authors:
+http://www.owlnet.rice.edu/~zw3/files/RICE/uWave/uWaveGestureLibraryReadme.html
+
+They say I must include this statement: "Jiayang Liu, Zhen Wang, Lin Zhong, 
+Jehan Wickramasuriya, and Venu Vasudevan, "uWave: Accelerometer-based 
+personalized gesture recognition and its applications," in Proc. IEEE Int. 
+Conf. Pervasive Computing and Communication (PerCom), March 2009."
+
+The re-factored code and my new implementation also require that the above
+statement be included if it is re-used in addition to requiring the following
+statement:
+
+"This product includes components of gestureRecognizer by Dominic Clifton"
+
+Other than that the GPL v3 applies (See LICENCE)
+
+
+Setup:
+
+Connect a MPU6050 to a raspberry pi's i2c bus.  Use default MPU6050 address.
+Raspberry Pi Model B v2.0 used for development.  i2c device address is
+hard-coded in the i2c library.  "/dev/i2c-1"
+
+
+Build:
+
+To build both executables (uWave and gestureRecognizer) issue:
+
+make
+
+To build just uWave:
+
+make uWave
+
+To build just gestureRecognizer:
+
+make gestureRecognizer
+
+
+Usage:
+
+Record gestures:
+
+Gestures are always recorded in "record.ges".  Gestures are always 1 second long.
+
+sudo ./gestureRecognizer RECORD
+mv record.ges 0.ges
+sudo ./gestureRecognizer RECORD
+mv record.ges 1.ges
+sudo ./gestureRecognizer RECORD
+mv record.ges 2.ges
+
+.. and so on.  Max supported gestures is currently 16.  See config.h
+
+Match a single gesture:
+
+sudo ./gestureRecognizer
+
+Continuously match gestures:
+
+sudo ./gestureRecognizer CONTINUOUS
+
+Replay gesture matching:
+
+cp mygesture.ges replay.ges
+./gestureRecognizer REPLAY
+
+
+Notes:
+
+The uWave executable does not have any specific timing, that is it runs as fast
+as possible.  This means that any gestures recorded (*.uwv) are not very useful
+or re-usable on other machines/systems/etc.
+
+Currently recorded gestures can be imported into gestureRecognizer via the
+Gesture::import() method, you would also need to enable USE_QUANTIZER in
+Config.h.  The import method will probably be removed at a later date but it is
+useful during development to compare results.
+
+It seems that the uWave library mangles the data, see USE_QUANTIZER but the
+method of data mangling doesn't lend itself well to the values provided by the
+MPU6050.  See the other uWave examples.
+ 

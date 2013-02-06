@@ -9,6 +9,7 @@ class GestureRecognizer {
 
 public:
   GestureRecognizer();
+  void load(const char *replayFilename);
   void loadGestures(void);
 
   void addAccelerationData(AccelerationData& accelerationData);
