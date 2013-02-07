@@ -180,8 +180,7 @@ long Gesture::calculateDistanceBetween(Gesture& other) {
       otherTotalAccelerationDataItems - 1, table);
   distance /= (totalAccelerationDataItems + otherTotalAccelerationDataItems);
 
-  printf("otherTotalAccelerationDataItems: %d, totalAccelerationDataItems: %d\n", otherTotalAccelerationDataItems,
-      totalAccelerationDataItems);
+  //printf("otherTotalAccelerationDataItems: %d, totalAccelerationDataItems: %d\n", otherTotalAccelerationDataItems, totalAccelerationDataItems);
 
   free(table);
 
